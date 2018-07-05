@@ -73,7 +73,7 @@ router.get('/:id/versions/:vid', (req, res) => {
 })
 
 /**
- * Calculate the 
+ * Calculate the score
  */
 router.get('/:id/versions/:vid/calculate', (req, res) => {
   var total_score = 0
@@ -82,7 +82,7 @@ router.get('/:id/versions/:vid/calculate', (req, res) => {
     .then(result => {
       result.forEach(value => {
         if (value.relavance === '')
-          res.status(201).send("Please fill all the score")
+          res.status(400).send("Please fill all the score")
         else
           total_score = total_score + parseInt(value.relavance)
       })
