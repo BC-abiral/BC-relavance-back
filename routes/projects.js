@@ -87,6 +87,11 @@ router.get('/:id/versions/:vid/calculate', (req, res) => {
           total_score = total_score + parseInt(value.relavance)
       })
       total_link = result.length
+      Version.findOneAndUpdate({ project: req.params.id, name: req.params.vid }, {
+        $set: {
+          score: parseFloat(total_score / total_link).toFixed(2)
+        }
+      }).exec()
       res.send({ total_score, total_link, score: parseFloat(total_score / total_link).toFixed(2) })
     })
 })
