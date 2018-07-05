@@ -72,4 +72,41 @@ router.get('/:id/versions/:vid', (req, res) => {
     })
 })
 
+/**
+ * Calculate the 
+ */
+router.get('/:id/versions/:vid/calculate', (req, res) => {
+  var total_score = 0
+  var total_link = 0
+  Data.find({ project: req.params.id, version: { $in: [req.params.vid] } })
+    .then(result => {
+      result.forEach(value => {
+        if (value.relavance === '')
+          res.status(201).send("Please fill all the score")
+        else
+          total_score = total_score + parseInt(value.relavance)
+      })
+      total_link = result.length
+      res.send({ total_score, total_link, score: parseFloat(total_score / total_link).toFixed(2) })
+    })
+})
+
+/**
+ * Update Relavance
+ */
+router.post('/:data_id', (req, res) => {
+  Data.findByIdAndUpdate(req.params.data_id, {
+    $set: {
+      relavance: req.body.relavance
+    }
+  }, { new: true })
+    .exec()
+    .then(result => {
+      res.send(result)
+    })
+    .catch(err => {
+      throw err
+    })
+})
+
 module.exports = router
