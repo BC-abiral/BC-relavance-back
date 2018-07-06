@@ -23,7 +23,7 @@ router.get('/all', (req, res) => {
 // default options
 router.use('/upload', fileUpload())
 
-router.post('/upload', function (req, res) {
+router.post('/upload', function(req, res) {
   if (!req.files) return res.status(400).send('No files were uploaded.')
 
   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
@@ -49,18 +49,19 @@ router.post('/upload', function (req, res) {
 
     let relavanceResults = _.uniqBy(originalRelavanceResult, 'originUrl')
 
-    Data.find({ project: req.params.projectId }).count().then(count => {
-      if (count > 0) {
-        performAdditionWithCondition(req, res, relavanceResults)
-      } else {
-        performBulkUpload(req, res, relavanceResults)
-      }
-    })
+    Data.find({ project: req.params.projectId })
+      .count()
+      .then(count => {
+        if (count > 0) {
+          performAdditionWithCondition(req, res, relavanceResults)
+        } else {
+          performBulkUpload(req, res, relavanceResults)
+        }
+      })
   })
 })
 
-const performBulkUpload = (req, res, relavanceResults) => {
-  console.log(JSON.stringify(relavanceResults));
+const performBulkUpload = async (req, res, relavanceResults) => {
   let allData = []
   for (var i = 0; i < relavanceResults.length; i++) {
     let data = {
@@ -77,8 +78,10 @@ const performBulkUpload = (req, res, relavanceResults) => {
     }
     allData.push(data)
   }
-  Data.insertMany(allData, (err, docs) => {
+
+  await Data.collection.insertMany(allData, (err, docs) => {
     if (err) throw err
+    console.log(docs.ops.length)
     res
       .json({ message: 'All Data Added to Database', docsCount: docs.length })
       .status(200)
