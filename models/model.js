@@ -23,7 +23,11 @@ const dataSchema = new Schema({
     ref: 'Project'
   },
   version: [String],
-  relavance: String
+  relavance: String,
+  remark: {
+    type: String,
+    default: ''
+  }
 })
 
 const Data = mongoose.model('Data', dataSchema)

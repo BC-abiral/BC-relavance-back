@@ -114,4 +114,22 @@ router.post('/:data_id', (req, res) => {
     })
 })
 
+/**
+ * Update Remarks
+ */
+router.post('/:data_id/remark', (req, res) => {
+  Data.findByIdAndUpdate(req.params.data_id, {
+    $set: {
+      remark: req.body.remark
+    }
+  }, { new: true })
+    .exec()
+    .then(result => {
+      res.send(result)
+    })
+    .catch(err => {
+      throw err
+    })
+})
+
 module.exports = router
