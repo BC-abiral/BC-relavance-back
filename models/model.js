@@ -23,7 +23,10 @@ const dataSchema = new Schema({
     ref: 'Project'
   },
   version: [String],
-  relavance: String,
+  relavance: {
+    type: String,
+    default: ''
+  },
   remark: {
     type: String,
     default: ''

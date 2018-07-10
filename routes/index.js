@@ -3,7 +3,8 @@ const express = require('express'),
   router = express.Router(),
   fs = require('fs'),
   _ = require('lodash'),
-  { Data, Version } = require('../models/model')
+  { Data, Version } = require('../models/model'),
+  mongoose = require('mongoose')
 
 /* GET home page. */
 router.get('/', (req, res) => {
@@ -49,9 +50,10 @@ router.post('/upload', function(req, res) {
 
     let relavanceResults = _.uniqBy(originalRelavanceResult, 'originUrl')
 
-    Data.find({ project: req.params.projectId })
+    Data.find({ project: req.body.projectId })
       .count()
       .then(count => {
+        console.log(count)
         if (count > 0) {
           performAdditionWithCondition(req, res, relavanceResults)
         } else {
@@ -72,9 +74,10 @@ const performBulkUpload = async (req, res, relavanceResults) => {
       similarityScore: relavanceResults[i].similarityScore,
       body: relavanceResults[i].body,
       source: relavanceResults[i].source,
-      project: req.body.projectId,
-      version: req.body.version,
-      relavance: ''
+      project: new mongoose.Types.ObjectId(req.body.projectId),
+      version: [req.body.version],
+      relavance: '',
+      remark: ''
     }
     allData.push(data)
   }
@@ -94,7 +97,7 @@ const performAdditionWithCondition = async (req, res, relavanceResults) => {
     let originUrl = relavanceResults[i].originUrl
     await Data.findOne({
       originUrl: relavanceResults[i].originUrl,
-      project: req.body.projectId
+      project: new mongoose.Types.ObjectId(req.body.projectId)
     })
       .count()
       .then(count => {
@@ -103,7 +106,7 @@ const performAdditionWithCondition = async (req, res, relavanceResults) => {
           // Here the data is already present so just add the version
           Data.updateMany(
             { originUrl: originUrl },
-            { $push: { version: req.body.version } },
+            { $push: { version: [req.body.version] } },
             (err, result) => {
               if (err) throw err
             }

@@ -61,8 +61,14 @@ router.get('/:id/versions', (req, res) => {
     })
 })
 
+/**
+ * Get All the Versions Information Provided Project_Id
+ */
 router.get('/:id/versions/:vid', (req, res) => {
-  Data.find({ project: req.params.id, version: { $in: [req.params.vid] } })
+  Data.find({
+    project: req.params.id,
+    version: { $in: [req.params.vid] }
+  })
     .exec()
     .then(result => {
       res.send(result)
@@ -79,50 +85,42 @@ router.get('/:id/versions/:vid/calculate', (req, res) => {
   var total_score = 0
   var total_link = 0
   Data.find({ project: req.params.id, version: { $in: [req.params.vid] } })
+    .exec()
     .then(result => {
       result.forEach(value => {
         if (value.relavance === '')
-          res.status(400).send("Please fill all the score")
-        else
-          total_score = total_score + parseInt(value.relavance)
+          res.status(400).send('Please fill all the score')
+        else total_score = total_score + parseInt(value.relavance)
       })
       total_link = result.length
-      Version.findOneAndUpdate({ project: req.params.id, name: req.params.vid }, {
-        $set: {
-          score: parseFloat(total_score / total_link).toFixed(2)
+      Version.findOneAndUpdate(
+        { project: req.params.id, name: req.params.vid },
+        {
+          $set: {
+            score: parseFloat(total_score / total_link).toFixed(2)
+          }
         }
-      }).exec()
-      res.send({ total_score, total_link, score: parseFloat(total_score / total_link).toFixed(2) })
+      )
+      res.send({
+        total_score,
+        total_link,
+        score: parseFloat(total_score / total_link).toFixed(2)
+      })
     })
 })
 
 /**
- * Update Relavance
+ * Comparision between Two Different Versions
  */
-router.post('/:data_id', (req, res) => {
-  Data.findByIdAndUpdate(req.params.data_id, {
-    $set: {
-      relavance: req.body.relavance
-    }
-  }, { new: true })
-    .exec()
-    .then(result => {
-      res.send(result)
-    })
-    .catch(err => {
-      throw err
-    })
-})
-
-/**
- * Update Remarks
- */
-router.post('/:data_id/remark', (req, res) => {
-  Data.findByIdAndUpdate(req.params.data_id, {
-    $set: {
-      remark: req.body.remark
-    }
-  }, { new: true })
+router.post('/:id/compare', (req, res) => {
+  const dataA = req.body.a
+  const dataB = req.body.b
+  // Here we need to get all the data which is unique to dataA
+  Data.find({
+    project: req.params.id,
+    version: { $in: [dataA] }
+  })
+    .where({ version: { $nin: [dataB] } })
     .exec()
     .then(result => {
       res.send(result)
